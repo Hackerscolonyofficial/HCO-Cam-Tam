@@ -1,3 +1,4 @@
 flask
-opencv-python
-cloudflared
+opencv-python-headless
+numpy
+requests
