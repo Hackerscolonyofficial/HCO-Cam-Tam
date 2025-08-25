@@ -1,5 +1,3 @@
-opencv-python-headless
 flask
-flask-cors
-requests
-cloudscraper
+opencv-python
+cloudflared
