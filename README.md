@@ -41,7 +41,7 @@ python3 main.py
 
 
 ---
-
+```
 🔑 Unlocking the Tool
 
 When you run the tool, it will show a countdown:
