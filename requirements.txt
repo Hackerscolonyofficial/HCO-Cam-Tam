@@ -1,4 +1,5 @@
 flask
 requests
 colorama
-# numpy and opencv via Termux pkg
+opencv-python-headless
+numpy
