@@ -1,41 +1,28 @@
-#!/data/data/com.termux/files/usr/bin/bash
-# =====================================================
-# HCO-CamTam Installer Script
+#!/bin/bash
+# HCO-Cam-Tam Installer
 # By Azhar (Hackers Colony)
-# =====================================================
 
 clear
-echo -e "\e[91m"
-echo "============================================"
-echo "        Installing HCO-CamTam Tool          "
-echo "============================================"
-echo -e "\e[0m"
+echo -e "\e[91m[+] Installing requirements for HCO Cam Tam...\e[0m"
+sleep 2
 
 # Update Termux
 pkg update -y && pkg upgrade -y
 
-# Install required packages
+# Install Python & essentials
 pkg install -y python git wget curl
 
-# Upgrade pip
+# Install pip packages cleanly
 pip install --upgrade pip
+pip install flask==3.1.1 colorama requests
 
-# Install Python requirements
-if [ -f requirements.txt ]; then
-    pip install -r requirements.txt --no-cache-dir
-fi
+# Install OpenCV (headless, avoids stuck build)
+pip install opencv-python==4.9.0.80
 
-# Install cloudflared if missing
-if ! command -v cloudflared &> /dev/null
-then
-    pkg install -y cloudflared
-fi
+# Install cloudflared
+pkg install -y cloudflared
 
-# Make scripts executable
-chmod +x main.py server.py
-
-echo -e "\n\e[92m[✔] Installation complete!"
-echo -e "\e[96mLaunching HCO-CamTam...\e[0m\n"
-
-# Start main.py
-python main.py
+clear
+echo -e "\e[92m[+] Installation Complete!\e[0m"
+echo -e "\e[93m[*] To run the tool, type:\e[0m"
+echo -e "\e[96m   python main.py\e[0m"
