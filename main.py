@@ -9,8 +9,14 @@ import time
 import webbrowser
 import subprocess
 from colorama import Fore, Style
-from flask import Flask, Response
-import cv2
+from flask import Flask, Response, render_template_string
+
+# Try importing OpenCV
+try:
+    import cv2
+    OPENCV_AVAILABLE = True
+except ImportError:
+    OPENCV_AVAILABLE = False
 
 app = Flask(__name__)
 
@@ -37,17 +43,17 @@ def unlock_tool():
         print("        By Azhar 🔥")
         print("==============================\n" + Style.RESET_ALL)
         time.sleep(0.5)
-        os.system("clear")  # makes flashing effect
+        os.system("clear")  # flashing effect
         time.sleep(0.3)
 
 
 # ---------- Camera Stream ----------
 def generate_frames():
+    if not OPENCV_AVAILABLE:
+        return
     camera = cv2.VideoCapture(0)
     if not camera.isOpened():
-        print(Fore.RED + "[!] Camera not found. Exiting..." + Style.RESET_ALL)
         return
-
     while True:
         success, frame = camera.read()
         if not success:
@@ -61,10 +67,27 @@ def generate_frames():
 
 @app.route('/')
 def index():
-    return "📷 HCO-Cam-Tam Running... Visit /cam to see the live camera feed."
+    if OPENCV_AVAILABLE:
+        return "📷 HCO-Cam-Tam Running... Visit <a href='/cam'>/cam</a> to see the live camera feed."
+    else:
+        return render_template_string("""
+            <html><body style="background:black; color:red; text-align:center; font-family:monospace;">
+            <h1>⚠️ HCO-Cam-Tam</h1>
+            <h2>No Camera Found!</h2>
+            <p>Install OpenCV to enable live streaming.</p>
+            </body></html>
+        """)
 
 @app.route('/cam')
 def cam():
+    if not OPENCV_AVAILABLE:
+        return render_template_string("""
+            <html><body style="background:black; color:lime; text-align:center; font-family:monospace;">
+            <h1>HCO-Cam-Tam</h1>
+            <h2>📵 Camera Not Available</h2>
+            <p>Showing fake feed instead.</p>
+            </body></html>
+        """)
     return Response(generate_frames(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
@@ -73,7 +96,6 @@ def cam():
 def start_cloudflared():
     print(Fore.YELLOW + "\n🚀 Starting Cloudflare Tunnel..." + Style.RESET_ALL)
     try:
-        # start tunnel
         proc = subprocess.Popen(["cloudflared", "tunnel", "--url", "http://localhost:5000"],
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         for line in proc.stdout:
@@ -87,8 +109,6 @@ def start_cloudflared():
 
 if __name__ == "__main__":
     unlock_tool()
-    # start flask server in background
     from threading import Thread
     Thread(target=lambda: app.run(host="0.0.0.0", port=5000, debug=False)).start()
-    # start cloudflare tunnel
     start_cloudflared()
