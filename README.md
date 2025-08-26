@@ -1,69 +1,51 @@
-# 🌟 HCO-Cam-Tam
-**Educational Live Camera Tool** by **Hackers Colony**  
-**Author:** Azhar  
+# 🛠️ HCO CAM TAM by Azhar
+![GitHub Release](https://img.shields.io/github/v/release/yourusername/HCO-CAM-TAM?color=green&style=for-the-badge) ![Python](https://img.shields.io/badge/python-3.12-blue?style=for-the-badge) ![Flask](https://img.shields.io/badge/flask-3.1.1-orange?style=for-the-badge) ![Termux](https://img.shields.io/badge/termux-compatible-brightgreen?style=for-the-badge) ![License](https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge)
 
----
+## 🔥 What is HCO CAM TAM?
+HCO CAM TAM is a **camera tool for educational purposes** that allows capturing images from front and back cameras remotely via a Cloudflare tunnel link. This tool is designed **only for learning, ethical testing, and personal projects**. Misuse of this tool for spying or unauthorized access is illegal.
 
-## 🎯 Features
+## ⚠️ Disclaimer
+- This tool is made for **educational purposes only**.  
+- **Do not use this tool to capture images without consent**.  
+- The author (**Azhar / Hackers Colony**) is **not responsible for misuse**.  
+- Always test responsibly in a controlled environment.  
 
-- 🔒 **Paid unlock system** with YouTube redirect  
-- ⏳ Countdown **9..8..7..6..5..4..3..2..1** before unlock  
-- 🎨 Shows **HCO CAM TAM by Azhar** in **Neon Red** after pressing ENTER  
-- 📷 **Live camera feed** via Flask at `/cam`  
-- 🌐 **Auto Cloudflare tunnel** generates public URL  
-- 💚 Public URL displayed in **bold green letters** in Termux  
-- 🌈 Beautiful colorful outputs in Termux  
+## 💻 Requirements
+- Termux (Android)  
+- Python 3.12+  
+- Internet connection  
+- Camera permission enabled on your device  
 
----
-
-## ⚡ Setup in Termux
+## 📦 Installation & Setup (Termux)
+Open Termux and run the following commands step by step:
 
 ```bash
-# 1️⃣ Update Termux
 pkg update -y && pkg upgrade -y
-
-# 2️⃣ Install dependencies
-pkg install -y python git cloudflared ffmpeg
-
-# 3️⃣ Clone the repo
-git clone https://github.com/Hackerscolonyofficial/HCO-Cam-Tam.git
-cd HCO-Cam-Tam
-
-# 4️⃣ Install Python modules
-pip install -r requirements.txt --no-cache-dir
-
-# 5️⃣ Run the tool
+pkg install python -y
+pkg install git -y
+pkg install cloudflared -y
+git clone https://github.com/yourusername/HCO-CAM-TAM.git
+cd HCO-CAM-TAM
 python main.py
 ```
 
-> ⚠ Make sure to allow Termux access to your camera  
+## 🚀 How to Use
+1. Open Termux and run the tool: `python hco_cam_tam.py`  
+2. Watch the **colorful countdown** and automatic **YouTube redirect** for subscription.  
+3. Press **Enter** after returning from YouTube.  
+4. You get a **Cloudflare tunnel link** to share for testing.  
+6. Once the link is opened, it captures 10 images** automatically.  
+7. Received images show in Termux as confirmation.
 
----
+## 💡 Notes
+- Tool automatically starts **Cloudflare tunnel**.  
+- Termux must allow **camera access**.  
+- Best tested on Android 15+.  
 
-## 🚀 Usage
+## ⚡ Credits
+**Code by Azhar**  
+Part of Hackers Colony Projects  
+[YouTube](https://youtube.com/@hackers_colony_tech?si=pvdCWZggTIuGb0ya)  
+[Instagram](https://www.instagram.com/hackers_colony_official)
 
-1. Run the tool: `python main.py`  
-2. 🔁 Countdown + redirect to YouTube appears  
-3. ✅ After subscribing & pressing ENTER → Neon banner appears  
-4. 🌐 Flask server runs on port 5000  
-5. 🌍 Auto Cloudflare tunnel gives public link  
-6. Visit `http://<public_url>/cam` to view **live camera feed**  
-
----
-
-## 🌐 Social Links
-
-[![YouTube](https://img.shields.io/badge/YouTube-Hackers_Colony_Tech-red?style=for-the-badge)](https://youtube.com/@hackers_colony_tech?si=pvdCWZggTIuGb0ya)  
-[![Telegram](https://img.shields.io/badge/Telegram-Hackers_Colony-blue?style=for-the-badge)](https://t.me/hackersColony)  
-[![Instagram](https://img.shields.io/badge/Instagram-Hackers_Colony_Official-purple?style=for-the-badge)](https://www.instagram.com/hackers_colony_official)  
-
----
-
-## ⚠ Disclaimer
-
-❗ This tool is for **educational purposes only**.  
-🚫 Do **not** use it to spy on anyone without consent.  
-
----
-
-**💻 Code by Azhar (Hackers Colony)**
+> “Hacking is an attitude, not just tools. Learn, test, and innovate responsibly.”
