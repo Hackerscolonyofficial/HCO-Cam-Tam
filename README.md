@@ -1,73 +1,69 @@
-# HCO-Cam-Tam 📷  
-
-[![Instagram](https://img.shields.io/badge/Instagram-Follow-red?logo=instagram)](https://www.instagram.com/hackers_colony_official)  
-[![Facebook](https://img.shields.io/badge/Facebook-Page-blue?logo=facebook)](https://www.facebook.com/share/1AY25it2Em/)  
-[![Telegram](https://img.shields.io/badge/Telegram-Join-white?logo=telegram)](https://t.me/hackersColony)  
-[![Discord](https://img.shields.io/badge/Discord-Join-purple?logo=discord)](https://discord.gg/Xpq9nCGD)  
-[![YouTube](https://img.shields.io/badge/YouTube-Subscribe-red?logo=youtube)](https://youtube.com/@hackers_colony_tech?si=pvdCWZggTIuGb0ya)  
+# HCO-Cam-Tam
+Educational Live Camera Tool by Hackers Colony  
+**Author:** Azhar  
 
 ---
 
-## 🚀 About  
-**HCO-Cam-Tam** is an educational awareness tool created by **Azhar (Hackers Colony)** to demonstrate how camera access can be misused if you’re not careful about the permissions you grant.  
-⚠️ **Disclaimer**: This project is strictly for **educational & ethical purposes only**. The author is not responsible for any misuse.  
+## Features
+
+- Paid unlock system with **YouTube redirect**  
+- Countdown 9..8..7..6..5..4..3..2..1  
+- Shows **HCO CAM TAM by Azhar** in **Neon Red** after unlock  
+- Live camera feed via Flask at `/cam`  
+- Auto Cloudflare tunnel generates public URL  
+- Public URL displayed in **bold green letters** in Termux  
+- Beautiful colorful outputs in Termux  
 
 ---
 
-## 🛠️ Features  
-- 🎥 Capture front & back camera  
-- 🌐 Auto start local Flask server  
-- 🔗 Auto generate Cloudflare public link  
-- 🎯 Awareness project for students & researchers  
-
----
-
-## ⚡ Installation (Termux)  
+## ⚡ Setup in Termux
 
 ```bash
-# 1. Update & install dependencies
+# 1️⃣ Update Termux
 pkg update -y && pkg upgrade -y
-pkg install python git curl wget -y
 
-# 2. Clone the repository
-git clone https://github.com/yourusername/HCO-Cam-Tam.git
+# 2️⃣ Install dependencies
+pkg install -y python git cloudflared
+
+# 3️⃣ Clone the repo
+git clone https://github.com/YourUsername/HCO-Cam-Tam.git
 cd HCO-Cam-Tam
 
-# 3. Install Python requirements
-pip install -r requirements.txt
+# 4️⃣ Install Python modules
+pip install -r requirements.txt --no-cache-dir
 
-# 4. Run the tool
-python3 main.py
-
-
----
+# 5️⃣ Run the tool
+python main.py
 ```
-🔑 Unlocking the Tool
 
-When you run the tool, it will show a countdown:
-8...7...6...5...4...3...2...1
-
-Then it will redirect you to YouTube (Hackers Colony Tech).
-👉 To unlock: Subscribe + Click on the Bell Icon.
-After you come back, you will see:
-
-🟩 HCO-Cam-Tam by Azhar 🟥
-(Displayed in Neon Red inside Neon Green box, bold letters — no ASCII).
-
+> Make sure to allow Termux access to your camera.
 
 ---
 
-📜 License
+## 🔗 Usage
 
-Educational Use Only.  
-Copying or redistribution not allowed.  
-© 2025 Hackers Colony - By Azhar.
-
+1. Run the tool: `python main.py`  
+2. Countdown + redirect to YouTube appears  
+3. After subscribing & pressing ENTER → Neon banner appears  
+4. Flask server runs on port 5000  
+5. Auto Cloudflare tunnel gives public link  
+6. Visit `http://<public_url>/cam` to view **live camera feed**  
 
 ---
 
-✨ Credits
+## 🌐 Social Links
 
-Code by Azhar
+[![YouTube](https://img.shields.io/badge/YouTube-Hackers_Colony_Tech-red)](https://youtube.com/@hackers_colony_tech?si=pvdCWZggTIuGb0ya)  
+[![Telegram](https://img.shields.io/badge/Telegram-Hackers_Colony-blue)](https://t.me/hackersColony)  
+[![Instagram](https://img.shields.io/badge/Instagram-Hackers_Colony_Official-purple)](https://www.instagram.com/hackers_colony_official)  
 
-Official Project of Hackers Colony
+---
+
+## ⚠ Disclaimer
+
+This tool is for **educational purposes only**.  
+Do not use it to spy on anyone without consent.  
+
+---
+
+**Code by Azhar (Hackers Colony)**
