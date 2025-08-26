@@ -1,4 +1,4 @@
 flask
 colorama
-opencv-python
+opencv-python-headless
 requests
