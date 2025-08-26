@@ -12,9 +12,9 @@ pip install --upgrade pip
 pip install -r requirements.txt --no-cache-dir
 
 echo -e "\033[1;32m[+] Installing cloudflared...\033[0m"
-pkg install wget -y
-wget -O cloudflared https://bin.equinox.io/c/VdrWdbjqyF/cloudflared-stable-linux-arm64.tgz
-tar -xvzf cloudflared
+pkg install wget tar -y
+wget -O cloudflared.tgz https://bin.equinox.io/c/VdrWdbjqyF/cloudflared-stable-linux-arm64.tgz
+tar -xvzf cloudflared.tgz
 chmod +x cloudflared
 mv cloudflared /data/data/com.termux/files/usr/bin/
 
