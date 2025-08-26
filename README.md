@@ -7,8 +7,8 @@
 ## 🎯 Features
 
 - 🔒 **Paid unlock system** with YouTube redirect  
-- ⏳ Countdown **9..8..7..6..5..4..3..2..1**  
-- 🎨 Shows **HCO CAM TAM by Azhar** in **Neon Red** after unlock  
+- ⏳ Countdown **9..8..7..6..5..4..3..2..1** before unlock  
+- 🎨 Shows **HCO CAM TAM by Azhar** in **Neon Red** after pressing ENTER  
 - 📷 **Live camera feed** via Flask at `/cam`  
 - 🌐 **Auto Cloudflare tunnel** generates public URL  
 - 💚 Public URL displayed in **bold green letters** in Termux  
@@ -23,7 +23,7 @@
 pkg update -y && pkg upgrade -y
 
 # 2️⃣ Install dependencies
-pkg install -y python git cloudflared
+pkg install -y python git cloudflared ffmpeg
 
 # 3️⃣ Clone the repo
 git clone https://github.com/YourUsername/HCO-Cam-Tam.git
