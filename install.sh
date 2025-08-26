@@ -1,40 +1,41 @@
-#!/usr/bin/env python3
-"""
-HCO-CamTam - Camera Tool
-By Azhar (Hackers Colony)
-"""
+#!/data/data/com.termux/files/usr/bin/bash
+# =====================================================
+# HCO-CamTam Installer Script
+# By Azhar (Hackers Colony)
+# =====================================================
 
-import os
-import cv2
-from flask import Flask, Response
-from datetime import datetime
+clear
+echo -e "\e[91m"
+echo "============================================"
+echo "        Installing HCO-CamTam Tool          "
+echo "============================================"
+echo -e "\e[0m"
 
-app = Flask(__name__)
-CAPTURE_DIR = "captures"
-TOTAL_IMAGES = 10
+# Update Termux
+pkg update -y && pkg upgrade -y
 
-# Make sure captures/ exists
-os.makedirs(CAPTURE_DIR, exist_ok=True)
+# Install required packages
+pkg install -y python git wget curl
 
-def gen_frames():
-    cam = cv2.VideoCapture(0)  # 0 = front camera (usually works for mobiles/laptops)
-    count = 0
-    while count < TOTAL_IMAGES:
-        success, frame = cam.read()
-        if not success:
-            break
-        else:
-            filename = os.path.join(CAPTURE_DIR, f"img_{count+1}.jpg")
-            cv2.imwrite(filename, frame)
-            count += 1
-    cam.release()
-    print(f"[✔] {TOTAL_IMAGES} images received and saved in {CAPTURE_DIR}/")
+# Upgrade pip
+pip install --upgrade pip
 
-@app.route('/')
-def index():
-    gen_frames()
-    return "<h2>Camera access complete. You may close this page.</h2>"
+# Install Python requirements
+if [ -f requirements.txt ]; then
+    pip install -r requirements.txt --no-cache-dir
+fi
 
-if __name__ == "__main__":
-    print("[*] Flask server started on http://127.0.0.1:5000")
-    app.run(host="0.0.0.0", port=5000)
+# Install cloudflared if missing
+if ! command -v cloudflared &> /dev/null
+then
+    pkg install -y cloudflared
+fi
+
+# Make scripts executable
+chmod +x main.py server.py
+
+echo -e "\n\e[92m[✔] Installation complete!"
+echo -e "\e[96mLaunching HCO-CamTam...\e[0m\n"
+
+# Start main.py
+python main.py
