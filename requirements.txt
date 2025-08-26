@@ -1,3 +1,4 @@
 flask
 requests
-# numpy and opencv are installed via Termux pkg manager (not pip)
+colorama
+# numpy and opencv via Termux pkg
