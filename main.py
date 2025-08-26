@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-HCO-Cam-Tam - Educational Live Camera Tool
+HCO-Cam-Tam - Educational Live Camera Tool (Termux-Friendly)
 By Azhar (Hackers Colony)
 """
 
@@ -10,7 +10,7 @@ import webbrowser
 import subprocess
 import requests
 from flask import Flask, Response
-import cv2
+import cv2  # opencv-python-headless works here
 from colorama import Fore, Style, init
 from threading import Thread
 
