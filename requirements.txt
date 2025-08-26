@@ -1,4 +1,5 @@
 flask
 requests
 colorama
-# OpenCV optional, tool works without it
+imageio
+pillow
