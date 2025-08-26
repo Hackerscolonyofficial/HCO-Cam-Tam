@@ -1,49 +1,34 @@
 #!/usr/bin/env python3
 """
-HCO-Cam-Tam
+HCO-CamTam - Camera Tool
 By Azhar (Hackers Colony)
 """
 
-import os, time, subprocess
-from colorama import Fore, Style
+import os
+import cv2
+from flask import Flask, Response
 
-YOUTUBE = "https://youtube.com/@hackers_colony_tech?si=pvdCWZggTIuGb0ya"
+app = Flask(__name__)
 
-def banner():
-    print(Fore.RED + Style.BRIGHT + "\nHCO Cam Tam".center(60))
-    print(Style.RESET_ALL + Fore.GREEN + "by Azhar - A Camera Tool\n".center(60))
-    print(Style.RESET_ALL)
+# Video capture from camera (0 = back, 1 = front depending on device)
+camera = cv2.VideoCapture(0)
 
-def unlock():
-    print(Fore.YELLOW + "\n[*] Tool locked! Subscribe to unlock...\n")
-    for i in range(5,0,-1):
-        print(Fore.CYAN + f"Redirecting to YouTube in {i} sec...", end="\r")
-        time.sleep(1)
-    os.system(f"termux-open-url {YOUTUBE}")
-    input(Fore.GREEN + "\n\n[+] Press ENTER after subscribing to continue...")
-
-def install_reqs():
-    print(Fore.YELLOW + "\n[*] Installing dependencies...\n")
-    os.system("pip install -r requirements.txt --no-cache-dir")
-
-def start_server():
-    print(Fore.YELLOW + "\n[*] Starting Flask server...\n")
-    subprocess.Popen(["python", "server.py"])
-    time.sleep(3)
-
-def start_cloudflare():
-    print(Fore.YELLOW + "\n[*] Starting Cloudflare tunnel...\n")
-    proc = subprocess.Popen(["cloudflared", "tunnel", "--url", "http://localhost:5000"],
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    for line in proc.stdout:
-        if "https://" in line:
-            link = line.strip().split(" ")[-1]
-            print(Fore.CYAN + f"\n[+] Send this link to victim: {Fore.GREEN}{link}\n")
+def gen_frames():
+    while True:
+        success, frame = camera.read()
+        if not success:
             break
+        else:
+            _, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+@app.route('/')
+def video_feed():
+    return Response(gen_frames(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == "__main__":
-    banner()
-    unlock()
-    install_reqs()
-    start_server()
-    start_cloudflare()
+    # Start Flask server
+    app.run(host="0.0.0.0", port=5000)
