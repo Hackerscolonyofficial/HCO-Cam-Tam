@@ -1,4 +1,3 @@
 flask
 requests
-numpy==1.26.4
-opencv-python
+# numpy and opencv are installed via Termux pkg manager (not pip)
