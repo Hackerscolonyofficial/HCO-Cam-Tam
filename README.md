@@ -26,7 +26,7 @@ pkg update -y && pkg upgrade -y
 pkg install -y python git cloudflared ffmpeg
 
 # 3️⃣ Clone the repo
-git clone https://github.com/YourUsername/HCO-Cam-Tam.git
+git clone https://github.com/Hackerscolonyofficial/HCO-Cam-Tam.git
 cd HCO-Cam-Tam
 
 # 4️⃣ Install Python modules
