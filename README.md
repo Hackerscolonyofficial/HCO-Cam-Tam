@@ -24,8 +24,8 @@ pkg update -y && pkg upgrade -y
 pkg install python -y
 pkg install git -y
 pkg install cloudflared -y
-git clone https://github.com/yourusername/HCO-CAM-TAM.git
-cd HCO-CAM-TAM
+git clone https://github.com/Hackerscolonyofficial/HCO-Cam-Tam.git
+cd HCO-Cam-Tam
 python main.py
 ```
 
