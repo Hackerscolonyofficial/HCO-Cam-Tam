@@ -1,5 +1,4 @@
 flask
 requests
 colorama
-opencv-python-headless
-numpy
+# OpenCV optional, tool works without it
